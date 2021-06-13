@@ -92,15 +92,19 @@ class ImageGridFragment() : Fragment(),
     private fun showImageList(folderName: String) {
         val images = getImageList(folderName)
 
-        val randomImageList = RandomUtil.getRandomList(images)
+        //val randomImageList = RandomUtil.getRandomList(images)
 
-        val listAdapter = ImageRecyclerAdapter(randomImageList, this)
-        val pagerAdapter = ImagePageAdapter(randomImageList)
+        //val listAdapter = ImageRecyclerAdapter(randomImageList, this)
+        //val pagerAdapter = ImagePageAdapter(randomImageList)
+
+        val listAdapter = ImageRecyclerAdapter(images, this)
+        val pagerAdapter = ImagePageAdapter(images)
         imageList.adapter = listAdapter
         viewPager.adapter = pagerAdapter
     }
 
     private fun getImageList(folderName: String): ArrayList<ImageItem> {
+        Log.d("RG", "getImageList started")
         val imageList = ArrayList<ImageItem>()
         val externalUriString = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         val imageProjection = arrayOf(
@@ -108,13 +112,15 @@ class ImageGridFragment() : Fragment(),
             MediaStore.Images.Media.DISPLAY_NAME,
             MediaStore.Images.Media.DATA
         )
+        val imageSortOrder = "Random()"
         val imageCursor = activity?.contentResolver?.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             imageProjection,
             MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME + "='" + folderName + "'",
             null,
-            null
+            imageSortOrder
         )
+        Log.d("RG", "getImageList query end")
 
         if (imageCursor != null) {
             imageCursor.moveToFirst()
@@ -122,40 +128,42 @@ class ImageGridFragment() : Fragment(),
                 val name = imageCursor.getString(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME))
                 val id = imageCursor.getString(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
                 val contentUri = Uri.withAppendedPath(externalUriString, id.toString())
-                val thumbnailUri = thumbnailURIFromOriginalURI(contentUri)
-                imageList.add(ImageItem(name, thumbnailUri, contentUri))
+                //val thumbnailUri = thumbnailURIFromOriginalURI(contentUri)
+                //imageList.add(ImageItem(name, thumbnailUri, contentUri))
+                imageList.add(ImageItem(name, contentUri))
             } while (imageCursor.moveToNext())
             imageCursor.close()
         }
+        Log.d("RG", "getImageList return")
         return imageList
     }
 
-    private fun thumbnailURIFromOriginalURI(selectedImageUri: Uri): Uri {
-        val rowId = selectedImageUri.lastPathSegment?.toLong()
-        return uriToThumbnail("" + rowId)
-    }
-
-    private fun uriToThumbnail(imageId: String): Uri {
-        val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
-        val thumbnailCursor = activity?.contentResolver?.query(
-            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
-            projection,
-            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
-            arrayOf(imageId),
-            null)
-        if (thumbnailCursor == null) {
-            return defaultThumbnailUri
-        } else if (thumbnailCursor.moveToFirst()) {
-            val thumbnailColumnIndex = thumbnailCursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA)
-            val thumbnailPath = thumbnailCursor.getString(thumbnailColumnIndex)
-            thumbnailCursor.close()
-            return Uri.parse(thumbnailPath)
-        } else {
-            MediaStore.Images.Thumbnails.getThumbnail(activity?.contentResolver, imageId.toLong(), MediaStore.Images.Thumbnails.MINI_KIND, null)
-            thumbnailCursor.close()
-            return uriToThumbnail(imageId)
-        }
-    }
+//    private fun thumbnailURIFromOriginalURI(selectedImageUri: Uri): Uri {
+//        val rowId = selectedImageUri.lastPathSegment?.toLong()
+//        return uriToThumbnail("" + rowId)
+//    }
+//
+//    private fun uriToThumbnail(imageId: String): Uri {
+//        val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
+//        val thumbnailCursor = activity?.contentResolver?.query(
+//            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+//            projection,
+//            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
+//            arrayOf(imageId),
+//            null)
+//        if (thumbnailCursor == null) {
+//            return defaultThumbnailUri
+//        } else if (thumbnailCursor.moveToFirst()) {
+//            val thumbnailColumnIndex = thumbnailCursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA)
+//            val thumbnailPath = thumbnailCursor.getString(thumbnailColumnIndex)
+//            thumbnailCursor.close()
+//            return Uri.parse(thumbnailPath)
+//        } else {
+//            MediaStore.Images.Thumbnails.getThumbnail(activity?.contentResolver, imageId.toLong(), MediaStore.Images.Thumbnails.MINI_KIND, null)
+//            thumbnailCursor.close()
+//            return uriToThumbnail(imageId)
+//        }
+//    }
 
     override fun onItemClicked(/*clickedItemUri: Uri*/position: Int) {
         Log.d("RG", "ImageGridFragment.onItemClicked() called")

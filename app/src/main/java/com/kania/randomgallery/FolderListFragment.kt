@@ -56,8 +56,7 @@ class FolderListFragment() : Fragment(),
 
     private fun showFolderList() {
         val folders = getFolderList()
-        val randomFolderList = RandomUtil.getRandomList(folders)
-        val adapter = FolderRecyclerAdapter(randomFolderList, this)
+        val adapter = FolderRecyclerAdapter(folders, this)
         folderList.adapter = adapter
 //        folderList.addItemDecoration(
 //            DividerItemDecoration(activity, DividerItemDecoration.VERTICAL)
@@ -71,6 +70,7 @@ class FolderListFragment() : Fragment(),
         //val idString = MediaStore.Images.Media._ID
         //val idString = MediaStore.Images.Media.BUCKET_ID
         //val displayNameString = MediaStore.Images.Media.DISPLAY_NAME
+        //TODO "distinct" can only use until android P (Q will be occurred error)
         val bucketDisplayNameString = "distinct " + MediaStore.Images.Media.BUCKET_DISPLAY_NAME
 //        val projection = arrayOf(
 //            //dataString,
@@ -80,9 +80,10 @@ class FolderListFragment() : Fragment(),
 //            //MediaStore.Images.Media.MIME_TYPE
 //        )
         val folderProjection = arrayOf(bucketDisplayNameString)
+        val folderSortOrder = "Random()"
 
         //val cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, "", null,MediaStore.Images.Media.BUCKET_DISPLAY_NAME+" asc");
-        val folderCursor = activity?.contentResolver?.query(externalUriString, folderProjection, null, null, null)
+        val folderCursor = activity?.contentResolver?.query(externalUriString, folderProjection, null, null, folderSortOrder)
 
         if (folderCursor != null) {
             folderCursor.moveToFirst()
@@ -110,8 +111,7 @@ class FolderListFragment() : Fragment(),
                     imageCursor.moveToFirst()
                     val id = imageCursor.getString(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
                     val contentUri = Uri.withAppendedPath(externalUriString, id.toString())
-                    val thumbnailUri = thumbnailURIFromOriginalURI(contentUri)
-                    folderList.add(FolderItem(folderName, thumbnailUri))
+                    folderList.add(FolderItem(folderName, contentUri))
                     imageCursor.close()
                 }
                 else {
@@ -123,32 +123,32 @@ class FolderListFragment() : Fragment(),
         return folderList
     }
 
-    private fun thumbnailURIFromOriginalURI(selectedImageUri: Uri): Uri {
-        val rowId = selectedImageUri.lastPathSegment?.toLong()
-        return uriToThumbnail("" + rowId)
-    }
-
-    private fun uriToThumbnail(imageId: String): Uri {
-        val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
-        val thumbnailCursor = activity?.contentResolver?.query(
-            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
-            projection,
-            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
-            arrayOf(imageId),
-            null)
-        if (thumbnailCursor == null) {
-            return defaultThumbnailUri
-        } else if (thumbnailCursor.moveToFirst()) {
-            val thumbnailColumnIndex = thumbnailCursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA)
-            val thumbnailPath = thumbnailCursor.getString(thumbnailColumnIndex)
-            thumbnailCursor.close()
-            return Uri.parse(thumbnailPath)
-        } else {
-            MediaStore.Images.Thumbnails.getThumbnail(activity?.contentResolver, imageId.toLong(), MediaStore.Images.Thumbnails.MINI_KIND, null)
-            thumbnailCursor.close()
-            return uriToThumbnail(imageId)
-        }
-    }
+//    private fun thumbnailURIFromOriginalURI(selectedImageUri: Uri): Uri {
+//        val rowId = selectedImageUri.lastPathSegment?.toLong()
+//        return uriToThumbnail("" + rowId)
+//    }
+//
+//    private fun uriToThumbnail(imageId: String): Uri {
+//        val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
+//        val thumbnailCursor = activity?.contentResolver?.query(
+//            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+//            projection,
+//            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
+//            arrayOf(imageId),
+//            null)
+//        if (thumbnailCursor == null) {
+//            return defaultThumbnailUri
+//        } else if (thumbnailCursor.moveToFirst()) {
+//            val thumbnailColumnIndex = thumbnailCursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA)
+//            val thumbnailPath = thumbnailCursor.getString(thumbnailColumnIndex)
+//            thumbnailCursor.close()
+//            return Uri.parse(thumbnailPath)
+//        } else {
+//            MediaStore.Images.Thumbnails.getThumbnail(activity?.contentResolver, imageId.toLong(), MediaStore.Images.Thumbnails.MINI_KIND, null)
+//            thumbnailCursor.close()
+//            return uriToThumbnail(imageId)
+//        }
+//    }
 
     override fun onItemClicked(clickedItemName: String) {
         Log.d("RG", "FolderListFragment.onItemClicked() called")
