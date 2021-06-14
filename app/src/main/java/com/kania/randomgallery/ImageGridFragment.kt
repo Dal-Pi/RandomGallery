@@ -29,10 +29,10 @@ class ImageGridFragment() : Fragment(),
     //var mFolderName: String = ""
 
     companion object {
-        fun newInstance(folderName: String): ImageGridFragment {
+        fun newInstance(folderId: String): ImageGridFragment {
             val fragment = ImageGridFragment()
             var args = Bundle()
-            args.putString("folder_name", folderName)
+            args.putString("folder_id", folderId)
             fragment.arguments = args;
             return fragment
         }
@@ -66,11 +66,11 @@ class ImageGridFragment() : Fragment(),
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val folderName = arguments?.getString("folder_name").toString()
-        Log.d("RG", "mFolderName(${folderName})")
+        val folderId = arguments?.getString("folder_id").toString()
+        Log.d("RG", "mFolderId(${folderId})")
         //TODO enable home button in actionbar
 
-        showImageList(folderName)
+        showImageList(folderId)
     }
 
     fun onCustomBackPressed() {
@@ -89,8 +89,8 @@ class ImageGridFragment() : Fragment(),
         mViewPagerEnabled = enable
     }
 
-    private fun showImageList(folderName: String) {
-        val images = getImageList(folderName)
+    private fun showImageList(folderId: String) {
+        val images = getImageList(folderId)
 
         //val randomImageList = RandomUtil.getRandomList(images)
 
@@ -103,7 +103,7 @@ class ImageGridFragment() : Fragment(),
         viewPager.adapter = pagerAdapter
     }
 
-    private fun getImageList(folderName: String): ArrayList<ImageItem> {
+    private fun getImageList(folderId: String): ArrayList<ImageItem> {
         Log.d("RG", "getImageList started")
         val imageList = ArrayList<ImageItem>()
         val externalUriString = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
@@ -116,7 +116,7 @@ class ImageGridFragment() : Fragment(),
         val imageCursor = activity?.contentResolver?.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             imageProjection,
-            MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME + "='" + folderName + "'",
+            MediaStore.Images.ImageColumns.BUCKET_ID + "='" + folderId + "'",
             null,
             imageSortOrder
         )

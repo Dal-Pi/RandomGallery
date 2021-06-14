@@ -73,10 +73,10 @@ class MainActivity : AppCompatActivity(),
             .commit()
     }
 
-    override fun onFolderSelected(clickedFolderName: String) {
+    override fun onFolderSelected(clickedFolderId: String) {
         Log.d("RG", "onFolderSelected() called")
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainer, ImageGridFragment.newInstance(clickedFolderName))
+            .replace(R.id.fragmentContainer, ImageGridFragment.newInstance(clickedFolderId))
             .addToBackStack(null)
             .commit()
     }

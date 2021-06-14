@@ -37,6 +37,7 @@ class FolderRecyclerAdapter(private val items: ArrayList<FolderItem>,
             return uriToThumbnail(context, "" + rowId)
         }
         private fun uriToThumbnail(context: Context, imageId: String): Uri {
+            //TODO change for android Q
             val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
             val thumbnailCursor = context.contentResolver.query(
                 MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
@@ -71,7 +72,7 @@ class FolderRecyclerAdapter(private val items: ArrayList<FolderItem>,
         val item = items[position]
         val listener = View.OnClickListener {
             Log.d("RG", "FolderRecyclerAdapter.onBindViewHolder() called")
-            mItemEventListener?.onItemClicked(item.name)
+            mItemEventListener?.onItemClicked(item.bucketId)
         }
         holder.apply {
             bind(listener, item)

@@ -65,13 +65,14 @@ class FolderListFragment() : Fragment(),
 
     private fun getFolderList(): ArrayList<FolderItem> {
         val folderList = ArrayList<FolderItem>()
+        val folderIdSet = mutableSetOf<String>()
         val externalUriString = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         //val dataString = MediaStore.Images.ImageColumns.DATA
         //val idString = MediaStore.Images.Media._ID
         //val idString = MediaStore.Images.Media.BUCKET_ID
         //val displayNameString = MediaStore.Images.Media.DISPLAY_NAME
         //TODO "distinct" can only use until android P (Q will be occurred error)
-        val bucketDisplayNameString = "distinct " + MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+        //val bucketDisplayNameString = "distinct " + MediaStore.Images.Media.DISPLAY_NAME
 //        val projection = arrayOf(
 //            //dataString,
 //            //idString,
@@ -79,7 +80,9 @@ class FolderListFragment() : Fragment(),
 //            bucketDisplayNameString,
 //            //MediaStore.Images.Media.MIME_TYPE
 //        )
-        val folderProjection = arrayOf(bucketDisplayNameString)
+        val folderProjection = arrayOf(
+            MediaStore.Images.Media.BUCKET_ID,
+            MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
         val folderSortOrder = "Random()"
 
         //val cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, "", null,MediaStore.Images.Media.BUCKET_DISPLAY_NAME+" asc");
@@ -88,8 +91,17 @@ class FolderListFragment() : Fragment(),
         if (folderCursor != null) {
             folderCursor.moveToFirst()
             do {
+                val folderId = folderCursor.getString(folderCursor.getColumnIndexOrThrow(
+                    MediaStore.Images.Media.BUCKET_ID))
+                if (folderIdSet.contains(folderId)) {
+                    continue
+                } else {
+                    folderIdSet.add(folderId)
+                }
+
                 val folderName = folderCursor.getString(folderCursor.getColumnIndexOrThrow(
                     MediaStore.Images.Media.BUCKET_DISPLAY_NAME))
+                Log.d("RG", "BUCKET_ID : $folderId, BUCKET_DISPLAY_NAME : $folderName")
                 //val id = cursor.getString(cursor.getColumnIndexOrThrow(idString))
                 //val contentUri = Uri.withAppendedPath(externalUri, id.toString())
                 //val thumbnailString = thumbnailURIFromOriginalURI(contentUri)
@@ -99,23 +111,25 @@ class FolderListFragment() : Fragment(),
                     MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
                     MediaStore.Images.Media.DATA,
                 )
+                //TODO just select latest 1
+                //val firstImageOrder = " ?? DESC LIMIT 1"
                 val imageCursor = activity?.contentResolver?.query(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     imageProjection,
-                    MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME + "='" + folderName + "'",
+                    MediaStore.Images.ImageColumns.BUCKET_ID + "='" + folderId + "'",
                     null,
-                    null
+                    null/*firstImageOrder*/
                 )
 
                 if (imageCursor != null) {
                     imageCursor.moveToFirst()
                     val id = imageCursor.getString(imageCursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID))
                     val contentUri = Uri.withAppendedPath(externalUriString, id.toString())
-                    folderList.add(FolderItem(folderName, contentUri))
+                    folderList.add(FolderItem(folderId, folderName, contentUri))
                     imageCursor.close()
                 }
                 else {
-                    folderList.add(FolderItem(folderName, defaultThumbnailUri))
+                    folderList.add(FolderItem(folderId, folderName, defaultThumbnailUri))
                 }
             } while (folderCursor.moveToNext())
             folderCursor.close()
@@ -150,8 +164,8 @@ class FolderListFragment() : Fragment(),
 //        }
 //    }
 
-    override fun onItemClicked(clickedItemName: String) {
+    override fun onItemClicked(clickedItemId: String) {
         Log.d("RG", "FolderListFragment.onItemClicked() called")
-        mFolderEventListener?.onFolderSelected(clickedItemName)
+        mFolderEventListener?.onFolderSelected(clickedItemId)
     }
 }
