@@ -111,14 +111,15 @@ class FolderListFragment() : Fragment(),
                     MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
                     MediaStore.Images.Media.DATA,
                 )
-                //TODO just select latest 1
-                //val firstImageOrder = " ?? DESC LIMIT 1"
+                val firstContentUriQuery = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    .buildUpon().appendQueryParameter("limit", "1").build()
+
                 val imageCursor = activity?.contentResolver?.query(
-                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    firstContentUriQuery,
                     imageProjection,
                     MediaStore.Images.ImageColumns.BUCKET_ID + "='" + folderId + "'",
                     null,
-                    null/*firstImageOrder*/
+                    null
                 )
 
                 if (imageCursor != null) {
