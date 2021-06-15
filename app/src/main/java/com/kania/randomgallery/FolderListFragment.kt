@@ -137,33 +137,6 @@ class FolderListFragment() : Fragment(),
         return folderList
     }
 
-//    private fun thumbnailURIFromOriginalURI(selectedImageUri: Uri): Uri {
-//        val rowId = selectedImageUri.lastPathSegment?.toLong()
-//        return uriToThumbnail("" + rowId)
-//    }
-//
-//    private fun uriToThumbnail(imageId: String): Uri {
-//        val projection = arrayOf(MediaStore.Images.Thumbnails.DATA)
-//        val thumbnailCursor = activity?.contentResolver?.query(
-//            MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
-//            projection,
-//            MediaStore.Images.Thumbnails.IMAGE_ID + "=?",
-//            arrayOf(imageId),
-//            null)
-//        if (thumbnailCursor == null) {
-//            return defaultThumbnailUri
-//        } else if (thumbnailCursor.moveToFirst()) {
-//            val thumbnailColumnIndex = thumbnailCursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA)
-//            val thumbnailPath = thumbnailCursor.getString(thumbnailColumnIndex)
-//            thumbnailCursor.close()
-//            return Uri.parse(thumbnailPath)
-//        } else {
-//            MediaStore.Images.Thumbnails.getThumbnail(activity?.contentResolver, imageId.toLong(), MediaStore.Images.Thumbnails.MINI_KIND, null)
-//            thumbnailCursor.close()
-//            return uriToThumbnail(imageId)
-//        }
-//    }
-
     override fun onItemClicked(clickedItemId: String) {
         Log.d("RG", "FolderListFragment.onItemClicked() called")
         mFolderEventListener?.onFolderSelected(clickedItemId)
